@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="nl">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MajesticAlly Dashboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout en stijl volledig naar referentie (Customer.io-analyse): lichte zijbalk met gegroepeerde menu-items en icoontjes, wit hoofdvlak, paginakop met icoon, filterbalk, panelen met dunne randen, tabs met onderstreping, donkergroene hoofdknop, blauwe grafieklijn. Lettertype Inter. */
+:root{
+  color-scheme:light;
+  --canvas:#f5f5f5; --paper:#ffffff; --ink:#111213; --muted:#454a4f; --rule:#d4d4d4; --rule-2:#e4e4e4;
+  --teal:#3b8fe6; --teal-dark:#0f3d40; --teal-tint:#e3f1f1; --link:#1d7a80; --brown:#f07b3d; --brown-soft:#fdeee4;
+  --good:#1e7b45; --good-soft:#e2f3e8; --bad:#c2321f; --bad-soft:#fde5e1; --warn:#8f5b00; --warn-soft:#fdf1d8;
+  --surface:var(--paper); --bg:var(--canvas); --line:var(--rule); --tint:var(--teal-tint); --teal-soft:var(--teal-tint);
+  --display:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  --body:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--canvas)}
+body{color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.5}
+h1,h2,h3{margin:0;text-wrap:balance}
+button,input{font:inherit;color:inherit}
+a{color:var(--link);text-underline-offset:3px}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:4px}
+.num,td.r,.tile .val,.lede{font-variant-numeric:lining-nums tabular-nums}
+svg.ic{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+.banner{background:#fdf1d8;color:var(--ink);font-size:14.5px;text-align:center;padding:7px max(16px, env(safe-area-inset-right, 0px)) 7px max(16px, env(safe-area-inset-left, 0px))}
+.banner b{font-weight:700}
+
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:calc(100vh - 34px)}
+.side{position:sticky;top:0;height:calc(100vh - 34px);padding:16px 10px;display:flex;flex-direction:column;gap:18px;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px}
+.mono{width:28px;height:28px;border-radius:6px;background:var(--teal-dark);color:#fff;font-weight:700;font-size:15px;display:grid;place-items:center}
+.brand .logo{display:block;font-weight:700;font-size:15.5px;line-height:1.2}
+.brand .sub{display:block;font-size:13.5px;color:var(--muted)}
+nav{display:flex;flex-direction:column;gap:1px}
+.ngroup{font-size:13px;font-weight:600;color:var(--muted);padding:14px 10px 4px}
+nav a{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:6px;text-decoration:none;color:var(--ink);font-size:15px;border:1px solid transparent}
+nav a:hover{background:rgba(30,34,34,.05)}
+nav a[aria-current="page"]{background:var(--paper);border-color:var(--rule);font-weight:700;color:var(--teal-dark);box-shadow:0 1px 1px rgba(30,34,34,.04)}
+nav a svg.ic{color:var(--muted)}
+nav a[aria-current="page"] svg.ic{color:var(--teal-dark)}
+nav .phase{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:400;min-width:18px;height:18px;border-radius:9px;background:rgba(30,34,34,.06);display:grid;place-items:center}
+.side-foot{margin-top:auto;font-size:13.5px;color:var(--muted);padding:0 10px;line-height:1.45}
+
+main{min-width:0;padding:8px 8px 8px 0}
+.mainpanel{background:var(--paper);border:1px solid var(--rule);border-radius:10px;min-height:100%;padding-block:22px 64px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.wrap{width:100%;max-width:1180px;min-width:0;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+#view.wrap{gap:18px}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
+.ptitle{display:flex;align-items:center;gap:12px;min-width:0}
+.picon{width:36px;height:36px;border-radius:8px;background:var(--teal-tint);color:var(--teal-dark);display:grid;place-items:center;flex:none}
+.picon svg.ic{width:19px;height:19px}
+.top h1{font-size:25px;font-weight:700;line-height:1.25}
+.meta{margin:2px 0 0;color:var(--muted);font-size:14.5px;max-width:80ch}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--teal-dark);color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:10px 16px;border-radius:7px}
+.btn:hover{background:#243b3b}
+
+.filters{border:1px solid var(--rule);border-radius:8px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:14px 28px;align-items:flex-end}
+.fgroup{display:flex;flex-direction:column;gap:6px;min-width:0}
+.flabel{font-size:14px;color:var(--ink);font-weight:600}
+.daterange{display:flex;align-items:center;gap:8px;border:1px solid var(--rule);border-radius:7px;padding:4px 10px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
+.daterange svg.ic{color:var(--muted)}
+.daterange input{border:0;background:none;color:var(--ink);font-size:14px;padding:2px 0}
+
+.seg{display:inline-flex;background:var(--canvas);border:1px solid var(--rule);border-radius:7px;padding:2px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:7px 13px;border-radius:5px;font-size:14.5px;font-weight:700;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--paper);color:var(--teal-dark);box-shadow:0 0 0 1px var(--rule),0 1px 2px rgba(30,34,34,.08)}
+.seg button:hover:not([aria-pressed="true"]){color:var(--ink)}
+.seg.small button{padding:4px 10px;font-size:13px}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--rule)}
+.tabs button{border:0;background:none;padding:9px 14px;font-size:15px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-pressed="true"]{color:var(--teal-dark);border-bottom-color:var(--teal-dark)}
+.tabs button:hover:not([aria-pressed="true"]){color:var(--ink)}
+
+.card{border:1px solid var(--rule);border-radius:8px;background:var(--paper);padding:18px;min-width:0;display:flex;flex-direction:column;gap:16px}
+.card.panel{background:var(--paper)}
+.card-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.card h2{font-size:18px;font-weight:700}
+.card .sub{font-size:14.5px;color:var(--muted);margin-top:2px;max-width:80ch}
+.g21{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:18px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+
+.hero{border:1px solid var(--rule);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:20px;}
+.lede{font-size:clamp(21px,2.3vw,27px);font-weight:700;line-height:1.3;margin:0;max-width:52ch;color:var(--ink)}
+
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:18px}
+.kpis.k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+#view > .kpis{border:1px solid var(--rule);border-radius:8px;padding:18px}
+.tile{padding:2px 22px;border-left:1px solid var(--rule-2);display:flex;flex-direction:column;gap:5px;min-width:0}
+.tile:first-child{border-left:0;padding-left:0}
+.tile .lbl{font-size:14.5px;color:var(--muted);font-weight:600}
+.tile .val{font-size:32px;font-weight:700;line-height:1.15;letter-spacing:-.01em}
+.tile .note{font-size:14px;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;font-weight:700;border-radius:5px;padding:1px 7px;white-space:nowrap}
+.chip.up{color:var(--good);background:var(--good-soft)}
+.chip.down{color:var(--bad);background:var(--bad-soft)}
+.chip.flat{color:var(--muted);background:var(--canvas)}
+.chip.src,.chip.manual{background:var(--paper);border:1px solid var(--rule);color:var(--ink);font-weight:700}
+.chip.src::before,.chip.manual::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--teal)}
+.chip.manual::before{background:var(--brown)}
+.chip.warn{color:var(--warn);background:var(--warn-soft)}
+.cmp{font-size:14px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+.bar{height:10px;background:var(--rule-2);border-radius:99px;position:relative}
+.bar > i{position:absolute;inset:0 auto 0 0;background:var(--teal);border-radius:99px}
+.bar > b{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .tt{position:absolute;pointer-events:none;background:var(--ink);color:#fff;font-size:14px;padding:6px 10px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-112%);opacity:0;transition:opacity .1s;z-index:2}
+.season rect[data-k]:hover{stroke:var(--ink);stroke-width:1.5}
+.legend{display:flex;gap:16px;font-size:14px;color:var(--muted);flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:18px;height:0;border-top:2.5px solid var(--teal)}
+.legend i.prev{border-top:2px dashed var(--brown)}
+.ax{fill:var(--muted);font-size:13px;font-family:var(--body)}
+.gl{stroke:var(--rule-2);stroke-width:1}
+
+.signals{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.signals li{display:grid;grid-template-columns:8px minmax(0,1fr);gap:10px;align-items:start}
+.signals li::before{content:"";width:8px;height:8px;border-radius:50%;margin-top:6px;background:var(--muted)}
+.signals li.bad::before{background:var(--bad)} .signals li.warn::before{background:#c98a1e} .signals li.good::before{background:var(--good)}
+.signals strong{display:block;font-size:15.5px}
+.signals span{font-size:14px;color:var(--muted)}
+
+.tbl-wrap{overflow-x:auto;margin:0 -18px;padding:0 18px}
+table{border-collapse:collapse;width:100%;font-size:15.5px}
+th{font-size:14px;color:var(--ink);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);background:var(--canvas);white-space:nowrap}
+td{padding:12px 10px;border-bottom:1px solid var(--rule-2);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#fafaf8}
+th.r,td.r{text-align:right}
+td .name{font-weight:700}
+td .muted,.muted{color:var(--muted);font-size:14px}
+tfoot td{font-weight:700;border-top:1px solid var(--rule);background:var(--canvas)}
+.rank{color:var(--muted);font-weight:700;width:28px}
+.share{display:flex;align-items:center;gap:8px;min-width:96px}
+.kmeta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin-top:3px}
+.chip.sm{font-size:12px;padding:0 6px;font-weight:600}
+.chip.sm::before{width:6px;height:6px}
+.mrange{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tabs button:disabled{opacity:.4;cursor:not-allowed}
+.share .bar{flex:1}
+
+.hbars{display:flex;flex-direction:column;gap:11px}
+.hbar{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,2fr) auto;gap:12px;align-items:center;font-size:15px}
+.hbar .v{font-weight:700;text-align:right;min-width:76px}
+
+.funnel{display:flex;flex-direction:column;gap:8px}
+.fstep{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px;align-items:center}
+.fstep .fb{height:34px;background:var(--teal-tint);border-left:3px solid var(--teal);border-radius:3px;display:flex;align-items:center;padding:0 10px;font-weight:700;font-size:14.5px;white-space:nowrap}
+.fstep .lab{font-size:15px;font-weight:700}
+.fstep .lab span{display:block;font-weight:400;font-size:13.5px;color:var(--muted)}
+
+.goal-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.link{font-size:13.5px;font-weight:700}
+.inv input{width:100%;min-width:84px;padding:6px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--paper);color:var(--ink);font-size:14px;text-align:right;font-variant-numeric:tabular-nums}
+.inv input:focus{border-color:var(--teal);outline:none}
+.inv td{padding:6px}
+.inv td.ro{color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.callout{background:#eef4fb;border-radius:7px;padding:14px 16px;font-size:15px;max-width:90ch}
+
+.mail{max-width:660px;border:1px solid var(--rule);border-radius:8px;padding:26px 30px;display:flex;flex-direction:column;gap:16px;background:var(--paper)}
+.mail .mhead{font-size:14.5px;color:var(--muted);border-bottom:1px solid var(--rule);padding-bottom:14px;display:grid;grid-template-columns:auto 1fr;gap:2px 12px}
+.mail .mhead b{color:var(--ink)}
+.mail h3{font-size:16px;font-weight:600}
+.mail p{margin:0;max-width:62ch}
+.mail ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+
+.updown{display:flex;gap:10px;flex-wrap:wrap}
+.ud{display:inline-flex;align-items:baseline;gap:6px;border-radius:7px;padding:4px 12px 4px 10px;font-size:15px;font-weight:600}
+.ud b{font-size:26px;font-weight:700;line-height:1.15}
+.ud.up{background:var(--good-soft);color:var(--good)}
+.ud.down{background:var(--bad-soft);color:var(--bad)}
+.sel{-webkit-appearance:none;appearance:none;border:1px solid var(--rule);border-radius:7px;padding:8px 40px 8px 12px;font-size:15px;line-height:1.3;color:var(--ink);min-width:110px;cursor:pointer;background:var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%235f6368' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center}
+.sel:hover{border-color:#b9b9b9}
+.sel:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+.cmpgrid{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:24px;align-items:start}
+.pick{border:1px solid var(--rule);border-radius:8px;margin:0;padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+.pick legend{font-weight:700;font-size:14.5px;padding:0 4px}
+.opt{display:flex;align-items:center;gap:9px;font-size:15px;cursor:pointer}
+.opt input,.chk input{width:17px;height:17px;accent-color:var(--teal-dark);margin:0}
+.sw{width:12px;height:12px;border-radius:3px;flex:none}
+.chk{display:flex;align-items:center;gap:8px;font-size:14.5px;cursor:pointer}
+.pickbtns{display:flex;gap:14px;border-top:1px solid var(--rule-2);padding-top:9px;margin-top:2px}
+.lnk{border:0;background:none;padding:0;color:var(--link);font-weight:600;font-size:14px;cursor:pointer}
+.lnk:hover{text-decoration:underline}
+.empty{border:1px dashed var(--rule);border-radius:8px;padding:48px 16px;text-align:center;color:var(--muted);font-size:15px}
+#cmpChart .tt{text-align:left;white-space:nowrap;transition:opacity .1s}
+@media (max-width: 1080px){
+  .cmpgrid{grid-template-columns:minmax(0,1fr)}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpis .tile:nth-child(odd){border-left:0;padding-left:0}
+  .g21{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width: 860px){
+  .app{display:block}
+  .side{position:sticky;top:env(safe-area-inset-top, 0px);z-index:5;height:auto;flex-direction:row;align-items:center;gap:12px;padding:8px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px));background:var(--canvas);border-bottom:1px solid var(--rule);overflow-x:auto}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--canvas)}
+  .brand .sub,.side-foot,nav .phase,.ngroup,.brand .logo{display:none}
+  nav{flex-direction:row}
+  nav a{white-space:nowrap}
+  main{padding:0}
+  .mainpanel{border:0;border-radius:0}
+  .g2{grid-template-columns:minmax(0,1fr)}
+  .mail{padding:18px}
+}
+@media (max-width: 560px){
+  .picon,#mailbtn{display:none}
+  .top h1{font-size:22px}
+  .meta{font-size:13.5px}
+  .filters{padding:12px;gap:12px}
+  .fgroup{max-width:100%}
+  .seg{flex-wrap:nowrap;overflow-x:auto;max-width:100%}
+  .seg button{white-space:nowrap;padding:6px 10px;font-size:14px}
+  .kpis,.kpis.k3{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:14px}
+  .kpis .tile{border-left:0;padding:12px 0 0;border-top:1px solid var(--rule-2)}
+  .kpis .tile:nth-child(-n+2){border-top:0;padding-top:0}
+  .tile .val{font-size:23px}
+  .tile .lbl{font-size:13.5px}
+  .cmp span:last-child{display:none}
+  .card,.hero,#view > .kpis{padding:14px}
+  .tbl-wrap{margin:0 -14px;padding:0 14px}
+  .card h2{font-size:17px}
+  .goal-head{flex-wrap:wrap}
+  .fstep{grid-template-columns:minmax(0,1fr)}
+  .hbar{grid-template-columns:minmax(0,1fr) auto}
+  .hbar .bar{grid-column:1 / -1;order:3}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+
+<div class="banner"><b>Prototype met demodata.</b> Dit zijn geen echte cijfers van MajesticAlly.</div>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><span class="mono" aria-hidden="true">M</span><span><span class="logo">MajesticAlly</span><span class="sub">Dashboard</span></span></div>
+    <nav id="nav" aria-label="Onderdelen">
+      <a href="#overzicht" data-v="overzicht"><svg class="ic" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Overzicht</a>
+      <div class="ngroup">Verkoop</div>
+      <a href="#kanalen" data-v="kanalen"><svg class="ic" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>Verkoopkanalen <span class="phase">3</span></a>
+      <a href="#producten" data-v="producten"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9Z"/><circle cx="8" cy="8" r="1.5"/></svg>Producten</a>
+      <div class="ngroup">Marketing</div>
+      <a href="#marketing" data-v="marketing"><svg class="ic" viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 4V6l-6 4H4a1 1 0 0 0-1 1Z"/><path d="M17 9a4 4 0 0 1 0 6"/></svg>Marketing <span class="phase">2</span></a>
+      <a href="#klanten" data-v="klanten"><svg class="ic" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/></svg>Klantgedrag <span class="phase">2</span></a>
+      <div class="ngroup">Resultaat</div>
+      <a href="#winst" data-v="winst"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20V11M10 20V4M16 20v-7M2 20h20"/></svg>Winstgevendheid <span class="phase">3</span></a>
+      <a href="#maandagmail" data-v="maandagmail"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Maandagmail <span class="phase">3</span></a>
+      <div class="ngroup">Beheer</div>
+      <a href="#invoer" data-v="invoer"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>Invoer</a>
+    </nav>
+    <div class="side-foot">Het getal achter een onderdeel is de fase waarin we het bouwen.</div>
+  </aside>
+  <main>
+    <div class="mainpanel">
+      <div class="wrap">
+        <header class="top">
+          <div class="ptitle"><span class="picon" id="picon" aria-hidden="true"></span><div><h1 id="title">Overzicht</h1><p class="meta" id="meta"></p></div></div>
+          <a class="btn" id="mailbtn" href="#maandagmail">Bekijk maandagmail</a>
+        </header>
+        <div class="filters" id="periodbox">
+          <div class="fgroup"><span class="flabel" id="plabel">Periode</span><div class="seg" id="periods" role="group" aria-labelledby="plabel"></div></div>
+          <div class="fgroup" id="custom" hidden><span class="flabel">Datumbereik</span>
+            <div class="daterange"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><input type="date" id="d-from" min="2026-01-01" max="2026-11-05" aria-label="Van"><span>tot en met</span><input type="date" id="d-to" min="2026-01-01" max="2026-11-05" aria-label="Tot en met"></div>
+          </div>
+        </div>
+        <div id="view" class="wrap"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+const DAY = 864e5, START = Date.UTC(2025,0,1), TODAY = Date.UTC(2026,10,5), PARTIAL = 0.6;
+const MON = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+const eur = new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+const eur2 = new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2});
+const num = new Intl.NumberFormat('nl-NL',{maximumFractionDigits:0});
+const pct = (v,d=0) => (v*100).toLocaleString('nl-NL',{minimumFractionDigits:d,maximumFractionDigits:d}) + '%';
+const dec = (v,d=1) => v.toLocaleString('nl-NL',{minimumFractionDigits:d,maximumFractionDigits:d});
+const short = v => v >= 1e6 ? '€' + dec(v/1e6) + ' mln' : v >= 1e4 ? '€' + num.format(Math.round(v/1e3)) + 'k' : v >= 1e3 ? '€' + dec(v/1e3) + 'k' : '€' + num.format(v);
+const dLabel = t => { const d = new Date(t); return d.getUTCDate() + ' ' + MON[d.getUTCMonth()]; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function rng(seed){ return function(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+/* ---------- Demodata: dagomzet majestically.nl (excl. btw, retouren, verzendkosten) ---------- */
+const MF = [0.78,0.72,0.82,0.86,0.96,0.82,0.72,0.76,0.95,1.18,1.72,1.62];
+const WF = [0.86,1.14,1.1,1.02,1.0,0.95,0.82];
+const r = rng(7);
+const days = [];
+for (let t = START; t <= TODAY; t += DAY){
+  const d = new Date(t), y = d.getUTCFullYear();
+  let rev = 1640 * MF[d.getUTCMonth()] * WF[d.getUTCDay()] * (y === 2026 ? 1.09 : 1) * (0.84 + r()*0.32);
+  if (t === TODAY) rev *= PARTIAL;
+  const aov = 36.4 + r()*3.4;
+  days.push({t, rev, ord: Math.max(1, Math.round(rev/aov))});
+}
+const at = t => days[Math.round((t - START)/DAY)];
+function sum(a, b, partialLast){
+  let rev = 0, ord = 0;
+  for (let t = a; t <= b; t += DAY){ const x = at(t); if (!x) continue; const f = (partialLast && t === b) ? PARTIAL : 1; rev += x.rev*f; ord += x.ord*f; }
+  return {rev, ord: Math.round(ord), n: Math.round((b - a)/DAY) + 1};
+}
+const PERIODS = {
+  vandaag:  {label:'Vandaag',    a:TODAY,              b:TODAY,       ca:TODAY-364*DAY,               cb:TODAY-364*DAY},
+  gisteren: {label:'Gisteren',   a:TODAY-DAY,          b:TODAY-DAY,   ca:TODAY-365*DAY,               cb:TODAY-365*DAY},
+  week:     {label:'Deze week',  a:Date.UTC(2026,10,2),b:TODAY,       ca:Date.UTC(2026,10,2)-364*DAY, cb:TODAY-364*DAY},
+  maand:    {label:'Deze maand', a:Date.UTC(2026,10,1),b:TODAY,       ca:Date.UTC(2025,10,1),         cb:Date.UTC(2025,10,5)},
+  jaar:     {label:'Dit jaar',   a:Date.UTC(2026,0,1), b:TODAY,       ca:Date.UTC(2025,0,1),          cb:Date.UTC(2025,10,5)}
+};
+function curPeriod(){
+  if (state.period !== 'aangepast') return PERIODS[state.period];
+  const a = state.ca, b = state.cb;
+  return {label: a === b ? 'Op ' + dLabel(a) : 'Van ' + dLabel(a) + ' tot en met ' + dLabel(b), a, b, ca: a - 364*DAY, cb: b - 364*DAY};
+}
+function getP(){ const p = curPeriod(); return {p, cur: sum(p.a,p.b,false), prev: sum(p.ca,p.cb,p.b===TODAY)}; }
+
+/* ---------- Herkomst (WooCommerce order attribution + Ads-kosten) ---------- */
+const SRC = [
+  {n:'Google Ads', share:.24, cost:.215, paid:true, yoy:.06, aov:1.04},
+  {n:'Facebook / Instagram Ads', share:.14, cost:.31, paid:true, yoy:-.04, aov:.93},
+  {n:'Google organisch', share:.22, yoy:.11, aov:1.0},
+  {n:'Mailing (Mailjet)', share:.12, yoy:.15, aov:1.08},
+  {n:'Social media organisch', share:.05, yoy:.02, aov:.9},
+  {n:'Direct', share:.18, yoy:.08, aov:1.02},
+  {n:'Overige verwijzingen', share:.05, yoy:-.03, aov:.95}
+];
+const FEE_MONTH = 1250, OTHER_MONTH = 400; // demo: beheer Online Harvest + overige marketing per maand
+function marketing(cur){
+  const rows = SRC.map(s => { const rev = cur.rev*s.share, ord = Math.max(0, Math.round(cur.ord*s.share/s.aov)); return {...s, rev, ord, spend: s.paid ? rev*s.cost : 0}; });
+  const paid = rows.filter(x => x.paid);
+  const ad = paid.reduce((a,x)=>a+x.spend,0), pRev = paid.reduce((a,x)=>a+x.rev,0), pOrd = paid.reduce((a,x)=>a+x.ord,0);
+  const fee = FEE_MONTH*12/365*cur.n, other = OTHER_MONTH*12/365*cur.n, total = ad+fee+other;
+  return {rows, ad, pRev, pOrd, fee, other, total, cpa: pOrd ? ad/pOrd : 0, roas: ad ? pRev/ad : 0, realCpa: pOrd ? total/pOrd : 0, share: total/cur.rev};
+}
+
+/* ---------- Producten ---------- */
+const PRODUCTS = [
+  {n:'MajesticAlly agenda 2026', c:'Kalenders', p:16.99, s:.14, tr:.12, cost:.25},
+  {n:'Scheurkalender 2026', c:'Kalenders', p:9.99, s:.07, tr:-.06, cost:.25},
+  {n:'Hoodie Joy', c:'Fashion', p:64.99, s:.07, tr:.23, cost:.48},
+  {n:'Bureaukalender 2026', c:'Kalenders', p:4.99, s:.06, tr:.41, cost:.25},
+  {n:'Thermosfles Faith over fear', c:'Gifts', p:24.99, s:.06, tr:-.09, cost:.41},
+  {n:'Kerstkaarten voordeelpakket', c:'Kaarten', p:12.5, s:.06, tr:.04, cost:.22},
+  {n:'Muurcirkel met eigen tekst', c:'Decoratie', p:34.95, s:.05, tr:.31, cost:.27},
+  {n:"Pen 'Jij bent goud waard'", c:'Gifts', p:14.99, s:.04, tr:null, cost:.30},
+  {n:'Leisteen met tekst', c:'Decoratie', p:14.99, s:.035, tr:-.22, cost:.25},
+  {n:"Tas 'Faith over fear'", c:'Fashion', p:12.99, s:.03, tr:-.14, cost:.25},
+  {n:"Ring 'Faith'", c:'Sieraden', p:12.99, s:.03, tr:.18, cost:.20},
+  {n:"Pen 'Je bent geliefd'", c:'Gifts', p:11.99, s:.03, tr:.02, cost:.30},
+  {n:"Poster 'Be still'", c:'Decoratie', p:19.95, s:.025, tr:-.11, cost:.18},
+  {n:'Wenskaarten set Bemoediging', c:'Kaarten', p:8.95, s:.025, tr:.07, cost:.20},
+  {n:"Kaart 'Vaders liefdesbrief'", c:'Kaarten', p:1.95, s:.02, tr:.05, cost:.15}
+];
+const CATS = [
+  {n:'Kalenders', s:.32, tr:.09},{n:'Kaarten', s:.17, tr:.04},{n:'Decoratie', s:.15, tr:.12},
+  {n:'Gifts', s:.14, tr:-.03},{n:'Fashion', s:.12, tr:.16},{n:'Sieraden', s:.06, tr:.08},{n:'Boeken', s:.04, tr:-.07}
+];
+
+const NEW_AVG = 150;
+const NEW = [
+  {n:"Pen 'Jij bent goud waard'", live:'2026-10-08', d30:412, d60:null},
+  {n:"Ring 'Faith'", live:'2026-09-15', d30:188, d60:301},
+  {n:'Thermosfles Faith over fear', live:'2026-08-20', d30:96, d60:171},
+  {n:'Muurcirkel met eigen tekst', live:'2026-06-02', d30:142, d60:268}
+];
+const STOCK = [
+  {n:'Hoodie Joy', stock:14, wk:11},
+  {n:"Pen 'Jij bent goud waard'", stock:85, wk:96},
+  {n:'Bureaukalender 2026', stock:190, wk:74},
+  {n:'MajesticAlly agenda 2026', stock:260, wk:118}
+];
+const CODES = [
+  {c:'GRATISVERZENDING', d:'Gratis verzending vanaf € 25', sh:.09, disc:0, ship:true},
+  {c:'AGENDA2026', d:"10% op agenda's en kalenders", sh:.07, disc:.10},
+  {c:'NIEUWSBRIEF15', d:'15% via de nieuwsbrief', sh:.05, disc:.15},
+  {c:'WELKOM10', d:'10% voor nieuwe klanten', sh:.04, disc:.10}
+];
+
+/* ---------- Verkoopkanalen (maanden jan–okt) ---------- */
+function webMonthly(y){ return Array.from({length:10}, (_,m) => { let s = 0; for (let t = Date.UTC(y,m,1); t < Date.UTC(y,m+1,1); t += DAY) s += at(t).rev; return Math.round(s); }); }
+function gen(base, trend, seed, tweak){ const rr = rng(seed); return [2025,2026].map((y,i) => Array.from({length:10}, (_,m) => { let v = base*MF[m]*(i ? trend : 1)*(0.9 + rr()*0.2); if (tweak) v *= tweak(y,m); return Math.round(v); })); }
+const pinkster = (y,m) => (y === 2026 && m === 4) || (y === 2025 && m === 5) ? 2.1 : 1;
+const CH = [
+  {name:'majestically.nl', type:'Eigen webshop', src:'WooCommerce', keep:1, data:[webMonthly(2025), webMonthly(2026)]},
+  {name:'shop.opwekking.nl', type:'Partnershop', src:'WooCommerce', keep:.6, data:gen(7600,1.04,11,pinkster)},
+  {name:'webshop.hourofpower.nl', type:'Partnershop', src:'WooCommerce', keep:.55, data:gen(4200,1.12,12)},
+  {name:'visjeposters.nl', type:'Partnershop', src:'WooCommerce', keep:.7, data:gen(2900,.82,13)},
+  {name:'Pinksterconferentie', type:'Evenement', src:'WeFact', keep:1, data:[[0,0,0,0,0,521400,0,0,0,0],[0,0,0,0,546800,0,0,0,0,0]]},
+  {name:'Festivals en evenementen', type:'Evenement', src:'Handmatig', keep:1, data:[[0,0,0,0,0,9800,15200,12600,2100,0],[0,0,0,0,3100,11200,16900,14800,2400,0]]},
+  {name:'CBC', type:'Groothandel', src:'Koppeling', keep:1, data:gen(7900,1.06,14,(y,m)=> m>=8 ? 1.25 : 1)},
+  {name:'ABC', type:'Groothandel', src:'WeFact', keep:1, data:gen(4500,.93,15)}
+];
+CH.forEach((c,ci) => { const rr = rng(40 + ci); c.years = {2024: c.data[0].map(v => Math.round(v*(0.86 + rr()*0.12))), 2025: c.data[0], 2026: c.data[1]}; });
+CH[4].years[2024] = [0,0,0,0,497300,0,0,0,0,0];
+{ const o = CH[1].years[2024]; [o[4], o[5]] = [o[5], o[4]]; }
+const YEARS = [2026, 2025, 2024];
+const PINK = 4;
+const MONF = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+const CHP = {vorige:{label:'Vorige maand', r:[9,9]}, kwartaal:{label:'Laatste 3 maanden', r:[7,9]}, jaar:{label:'Dit jaar', r:[0,9]}};
+const A = c => c.years[state.yA], B = c => c.years[state.yB];
+const tot = a => a.reduce((x,y) => x + y, 0);
+function mRange(){ return state.chP === 'aangepast' ? [Math.min(state.m0, state.m1), Math.max(state.m0, state.m1)] : CHP[state.chP].r; }
+function mLabel(){ const [a,b] = mRange(); return a === b ? MONF[a][0].toUpperCase() + MONF[a].slice(1) : MONF[a][0].toUpperCase() + MONF[a].slice(1) + ' t/m ' + MONF[b]; }
+const sl = arr => { const [a,b] = mRange(); return arr.slice(a, b + 1); };
+const showCh = i => state.pink || i !== PINK;
+function channels(){
+  return CH.map((c,i) => ({...c, i, tA: tot(sl(A(c))), tB: tot(sl(B(c)))})).filter(c => showCh(c.i));
+}
+
+/* ---------- State ---------- */
+const state = {period:'maand', gran:'dag', cost:'regel', goal:95000, ca:Date.UTC(2026,9,1), cb:Date.UTC(2026,9,31), cmp:new Set([1,2,3]), cmpPrev:false, cmpMode:'maand', yA:2026, yB:2025, chP:'jaar', m0:0, m1:9, pink:true};
+try { const p = localStorage.getItem('ma-period'); if (p && (PERIODS[p] || p === 'aangepast')) state.period = p; } catch(e) {}
+
+/* ---------- Helpers ---------- */
+function change(c, p, invert){
+  if (!p) return '<span class="chip flat">nieuw</span>';
+  const d = c/p - 1, good = invert ? d < 0 : d > 0;
+  if (Math.abs(d) < .005) return '<span class="chip flat">0%</span>';
+  return `<span class="chip ${good ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'} ${pct(Math.abs(d),1)}</span>`;
+}
+function trendChip(t){ if (t == null) return '<span class="chip warn">nieuw</span>'; return `<span class="chip ${t >= 0 ? 'up' : 'down'}">${t >= 0 ? '▲' : '▼'} ${pct(Math.abs(t))}</span>`; }
+function srcChip(s, sm){ return `<span class="chip ${s === 'Handmatig' ? 'manual' : 'src'}${sm ? ' sm' : ''}">${s}</span>`; }
+function tile(lbl, val, chip, note){
+  return `<div class="tile"><span class="lbl">${lbl}</span><span class="val">${val}</span>${chip ? `<span class="cmp">${chip}<span>t.o.v. vorig jaar</span></span>` : ''}${note ? `<span class="note">${note}</span>` : ''}</div>`;
+}
+function niceMax(v){ if (v <= 0) return 4; const s = v/4, e = Math.pow(10, Math.floor(Math.log10(s))), f = s/e; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10)*e*4; }
+
+/* ---------- Lijngrafiek ---------- */
+function lineChart(el, labels, cur, prev, tipLabel){
+  const W = 680, H = 240, pl = 52, pr = 10, pt = 10, pb = 28;
+  const vals = cur.concat(prev).filter(v => v != null);
+  const max = niceMax(Math.max(...vals)*1.05);
+  const n = labels.length, X = i => pl + i*(W - pl - pr)/(n - 1), Y = v => pt + (H - pt - pb)*(1 - v/max);
+  const line = arr => arr.map((v,i) => v == null ? null : [X(i), Y(v)]).filter(Boolean).map((p,i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('');
+  const lastCur = cur.reduce((a,v,i) => v != null ? i : a, 0);
+  const area = line(cur) + `L${X(lastCur).toFixed(1)} ${Y(0)}L${X(0)} ${Y(0)}Z`;
+  let g = '';
+  for (let k = 0; k <= 4; k++){ const v = max*k/4, y = Y(v); g += `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}"/><text class="ax" x="${pl - 8}" y="${y + 4}" text-anchor="end">${short(v)}</text>`; }
+  const step = Math.ceil(n/8);
+  labels.forEach((l,i) => { if ((n - 1 - i) % step === 0) g += `<text class="ax" x="${X(i)}" y="${H - 8}" text-anchor="middle">${l}</text>`; });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Omzetontwikkeling dit jaar en vorig jaar">
+    ${g}
+    <path d="${area}" fill="var(--teal)" fill-opacity="0.09"/>
+    <path d="${line(prev)}" fill="none" stroke="var(--brown)" stroke-width="1.8" stroke-dasharray="5 4"/>
+    <path d="${line(cur)}" fill="none" stroke="var(--teal)" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="${X(lastCur)}" cy="${Y(cur[lastCur])}" r="4.5" fill="var(--teal)" stroke="var(--surface)" stroke-width="2"/>
+    <line id="hov" x1="0" x2="0" y1="${pt}" y2="${H - pb}" stroke="var(--muted)" stroke-width="1" opacity="0"/>
+  </svg><div class="tt"></div>`;
+  const svg = el.querySelector('svg'), tt = el.querySelector('.tt'), hov = el.querySelector('#hov');
+  const move = e => {
+    const b = svg.getBoundingClientRect(), x = (e.clientX - b.left)/b.width*W;
+    const i = Math.max(0, Math.min(n - 1, Math.round((x - pl)/((W - pl - pr)/(n - 1)))));
+    hov.setAttribute('x1', X(i)); hov.setAttribute('x2', X(i)); hov.setAttribute('opacity', .5);
+    tt.innerHTML = `<b>${tipLabel(i)}</b><br>Dit jaar: ${cur[i] == null ? '—' : eur.format(cur[i])}<br>Vorig jaar: ${eur.format(prev[i])}`;
+    tt.style.left = (X(i)/W*100) + '%'; tt.style.top = (Y(Math.max(cur[i] || 0, prev[i]))/H*b.height) + 'px'; tt.style.opacity = 1;
+  };
+  svg.addEventListener('pointermove', move);
+  svg.addEventListener('pointerleave', () => { tt.style.opacity = 0; hov.setAttribute('opacity', 0); });
+}
+function drawRevChart(){
+  const el = document.getElementById('revChart'); if (!el) return;
+  let labels = [], cur = [], prev = [], tip;
+  if (state.gran === 'dag'){
+    for (let k = 29; k >= 0; k--){ const t = TODAY - k*DAY; labels.push(dLabel(t)); cur.push(at(t).rev); prev.push(at(t - 364*DAY).rev*(t === TODAY ? PARTIAL : 1)); }
+    tip = i => labels[i] + (i === 29 ? ' (tot nu)' : '');
+  } else if (state.gran === 'week'){
+    const mon = Date.UTC(2026,10,2);
+    for (let k = 25; k >= 0; k--){ const a = mon - k*7*DAY, b = Math.min(a + 6*DAY, TODAY); labels.push(dLabel(a)); cur.push(sum(a,b).rev); prev.push(sum(a - 364*DAY, b - 364*DAY, b === TODAY).rev); }
+    tip = i => 'Week van ' + labels[i] + (i === 25 ? ' (tot nu)' : '');
+  } else {
+    for (let m = 0; m < 12; m++){
+      labels.push(MON[m]);
+      const a = Date.UTC(2026,m,1), e = Date.UTC(2026,m+1,1) - DAY;
+      cur.push(a > TODAY ? null : sum(a, Math.min(e, TODAY)).rev);
+      prev.push(sum(Date.UTC(2025,m,1), Date.UTC(2025,m+1,1) - DAY).rev);
+    }
+    tip = i => MON[i] + (i === 10 ? ' 2026 (t/m 5 nov)' : '');
+  }
+  lineChart(el, labels, cur, prev, tip);
+}
+
+/* ---------- Seizoenskalender: elke week een vakje ---------- */
+function drawSeason(){
+  const el = document.getElementById('season'); if (!el) return;
+  const starts = {2025: Date.UTC(2024,11,30), 2026: Date.UTC(2025,11,29)};
+  const weeks = Array.from({length:52}, (_,k) => {
+    const a26 = starts[2026] + k*7*DAY, a25 = starts[2025] + k*7*DAY;
+    const future = a26 > TODAY, cur = TODAY >= a26 && TODAY <= a26 + 6*DAY;
+    const r25 = sum(a25, a25 + 6*DAY).rev;
+    const r26 = future ? null : sum(a26, Math.min(a26 + 6*DAY, TODAY)).rev;
+    const r25cmp = cur ? sum(a25, a25 + Math.round((TODAY - a26)/DAY)*DAY, true).rev : r25;
+    return {k, a26, r25, r26, r25cmp, cur};
+  });
+  const W = 720, H = 250, pl = 54, pr = 8, pt = 26, pb = 30;
+  const max = niceMax(Math.max(...weeks.map(w => Math.max(w.r25, w.r26 || 0))));
+  const step = (W - pl - pr)/52, Y = v => pt + (H - pt - pb)*(1 - v/max), X = k => pl + k*step;
+  let s = '';
+  for (let i = 0; i <= 4; i++){ const v = max*i/4, y = Y(v); s += `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}"/><text class="ax" x="${pl - 8}" y="${y + 4}" text-anchor="end">${short(v)}</text>`; }
+  MON.forEach((m,i) => { const k = Math.floor((Date.UTC(2026,i,1) - starts[2026])/7/DAY); s += `<text class="ax" x="${X(Math.max(0,k)) + 2}" y="${H - 8}">${m}</text>`; });
+  weeks.forEach(w => {
+    const x = X(w.k);
+    s += `<rect x="${(x + step*.1).toFixed(1)}" y="${Y(w.cur ? w.r25cmp : w.r25).toFixed(1)}" width="${(step*.8).toFixed(1)}" height="${(Y(0) - Y(w.cur ? w.r25cmp : w.r25)).toFixed(1)}" rx="1.5" fill="#cfd3d8"/>`;
+    if (w.r26 != null){
+      const behind = w.r26 < w.r25cmp;
+      s += `<rect x="${(x + step*.28).toFixed(1)}" y="${Y(w.r26).toFixed(1)}" width="${(step*.44).toFixed(1)}" height="${(Y(0) - Y(w.r26)).toFixed(1)}" rx="1.5" fill="${w.cur ? 'var(--teal-dark)' : 'var(--teal)'}"/>`;
+    }
+    s += `<rect data-k="${w.k}" x="${x.toFixed(1)}" y="${pt}" width="${step.toFixed(1)}" height="${H - pt - pb}" fill="transparent"/>`;
+  });
+  const cw = weeks.find(w => w.cur);
+  if (cw){ const x = X(cw.k) + step/2; s += `<line x1="${x}" x2="${x}" y1="${pt - 6}" y2="${Y(cw.r25cmp) - 4}" stroke="var(--teal-dark)" stroke-dasharray="3 3"/><text x="${x}" y="${pt - 10}" text-anchor="middle" style="font-size:13px;font-weight:700;fill:var(--teal-dark)">deze week</text>`; }
+  el.innerHTML = `<div class="legend" style="margin-bottom:6px"><span><i style="border-top:10px solid var(--teal);width:10px"></i>2026</span><span><i style="border-top:10px solid #cfd3d8;width:14px"></i>2025</span></div><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Omzet per week, 2026 tegenover 2025">${s}<rect id="wkHov" x="0" y="${pt}" width="${step}" height="${H - pt - pb}" fill="var(--ink)" fill-opacity="0" pointer-events="none"/></svg><div class="tt"></div>`;
+  const svg = el.querySelector('svg'), tt = el.querySelector('.tt'), hov = el.querySelector('#wkHov');
+  svg.addEventListener('pointermove', e => {
+    const t = e.target; if (t.dataset.k == null) return;
+    const w = weeks[+t.dataset.k];
+    hov.setAttribute('x', X(w.k)); hov.setAttribute('fill-opacity', .05);
+    const d = w.r26 != null ? w.r26/w.r25cmp - 1 : null;
+    tt.innerHTML = `<b>Week ${w.k + 1}, vanaf ${dLabel(w.a26)}${w.cur ? ' (tot nu)' : ''}</b><br>2026: ${w.r26 == null ? 'nog niet' : eur.format(w.r26)}<br>2025: ${eur.format(w.cur ? w.r25cmp : w.r25)}${d == null ? '' : `<br><span style="color:${d >= 0 ? '#7fd6a0' : '#ff9d8a'}">${d >= 0 ? '▲' : '▼'} ${pct(Math.abs(d),1)}</span>`}`;
+    const b = svg.getBoundingClientRect(), px = (X(w.k) + step/2)/W*b.width, right = w.k < 26;
+    tt.style.left = (right ? px + 12 : px - 12) + 'px'; tt.style.transform = right ? 'translate(0,0)' : 'translate(-100%,0)';
+    tt.style.top = '30px'; tt.style.opacity = 1;
+  });
+  svg.addEventListener('pointerleave', () => { tt.style.opacity = 0; hov.setAttribute('fill-opacity', 0); });
+}
+
+/* ---------- Signalen ---------- */
+function signals(){
+  const out = [];
+  CH.forEach(c => { const d = tot(c.data[1])/tot(c.data[0]) - 1; if (d < -.05) out.push({l:'bad', t:`${c.name} blijft ${pct(-d)} achter op vorig jaar`, s:'Verkoopkanalen, jan–okt'}); });
+  out.push({l:'warn', t:'ROAS Facebook / Instagram daalde naar 2,4', s:'Marketing, vorige week 3,3'});
+  out.push({l:'good', t:'Bureaukalender 2026 verkoopt 41% meer dan vorig jaar', s:'Producten, deze maand'});
+  out.push({l:'warn', t:'Hoodie Joy: voorraad op in circa 9 dagen', s:'Voorraad, bij huidig verkooptempo'});
+  return out;
+}
+
+/* ---------- Weergaven ---------- */
+const V = {};
+V.overzicht = {
+  title:'Overzicht', meta:'Webshop majestically.nl, omzet exclusief btw, retouren en verzendkosten', period:true,
+  html(){
+    const {p, cur, prev} = getP();
+    const mtd = sum(Date.UTC(2026,10,1), TODAY).rev, gp = mtd/state.goal, exp = (4 + PARTIAL)/30;
+    const mk = marketing(cur);
+    const topSrc = mk.rows.slice().sort((a,b) => b.rev - a.rev);
+    const maxSrc = topSrc[0].rev;
+    const topP = PRODUCTS.slice().sort((a,b) => b.s - a.s).slice(0,5);
+    const d = cur.rev/prev.rev - 1;
+    return `
+    <section class="hero">
+    <div class="kpis">
+      ${tile('Omzet', eur.format(cur.rev), change(cur.rev, prev.rev), p.label)}
+      ${tile('Bestellingen', num.format(cur.ord), change(cur.ord, prev.ord))}
+      ${tile('Gemiddelde orderwaarde', eur2.format(cur.rev/cur.ord), change(cur.rev/cur.ord, prev.rev/prev.ord))}
+      <div class="tile">
+        <div class="goal-head"><span class="lbl">Maanddoel november</span><span class="chip ${gp >= exp ? 'up' : 'warn'}">${gp >= exp ? 'op schema' : 'achter op schema'}</span></div>
+        <span class="val">${pct(gp)}</span>
+        <div class="bar" title="Streep = waar je volgens schema nu zou moeten zijn"><i style="width:${Math.min(100, gp*100)}%"></i><b style="left:${exp*100}%"></b></div>
+        <span class="note">${eur.format(mtd)} van ${eur.format(state.goal)}. Volgens schema nu ${pct(exp)}.</span>
+      </div>
+    </div>
+    </section>
+    ${(() => {
+      const all = CH.map((c,i) => ({c, i, a: tot(c.data[1]), b: tot(c.data[0])}));
+      const TA = tot(all.map(x => x.a)), TB = tot(all.map(x => x.b));
+      const xp = all.filter(x => x.i !== PINK), XA = tot(xp.map(x => x.a)), XB = tot(xp.map(x => x.b));
+      const down = all.filter(x => x.a < x.b);
+      return `<section class="card">
+        <div class="card-head"><div><h2>Alle verkoopkanalen</h2><div class="sub">Januari t/m oktober 2026, afgesloten maanden. De cijfers hierboven gaan alleen over de webshop.</div></div><a class="link" href="#kanalen">Bekijk verkoopkanalen</a></div>
+        <div class="kpis k3">
+          ${tile('Alle kanalen', eur.format(TA), change(TA, TB))}
+          ${tile('Zonder Pinksterconferentie', eur.format(XA), change(XA, XB), 'Zo zie je hoe de rest het doet')}
+          <div class="tile"><span class="lbl">Kanalen die dalen</span>
+            <div class="updown"><span class="ud ${down.length ? 'down' : 'up'}"><b>${down.length}</b> van ${all.length}</span></div>
+            <span class="note">${down.length ? down.map(x => `<a href="#kanalen">${esc(x.c.name)}</a> ${change(x.a, x.b)}`).join('<br>') : 'Alle kanalen groeien'}</span></div>
+        </div>
+      </section>`;
+    })()}
+    <section class="card">
+      <div><h2>Omzet per week</h2><div class="sub">Webshop, dit jaar (blauw) naast dezelfde week vorig jaar (grijs). Ga met de muis over een week voor de bedragen.</div></div>
+      <div class="chart season" id="season"></div>
+    </section>
+    <div class="g21">
+      <div class="card">
+        <div class="card-head"><div><h2>Omzetontwikkeling</h2><div class="sub">Dit jaar tegenover dezelfde periode vorig jaar</div></div>
+          <div class="tabs" id="gran" role="group" aria-label="Weergave">${['dag','week','maand'].map(g => `<button type="button" data-g="${g}" aria-pressed="${state.gran === g}">${g[0].toUpperCase() + g.slice(1)}</button>`).join('')}</div></div>
+        <div class="legend"><span><i></i>2026</span><span><i class="prev"></i>2025</span></div>
+        <div class="chart" id="revChart"></div>
+      </div>
+      <div class="card panel">
+        <div><h2>Signalen</h2><div class="sub">Wat aandacht vraagt</div></div>
+        <ul class="signals">${signals().map(s => `<li class="${s.l}"><div><strong>${s.t}</strong><span>${s.s}</span></div></li>`).join('')}</ul>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card">
+        <div class="card-head"><div><h2>Waar komt de omzet vandaan?</h2><div class="sub">${p.label}, omzet per herkomstkanaal</div></div><a class="link" href="#marketing">Bekijk marketing</a></div>
+        <div class="hbars">${topSrc.map(s => `<div class="hbar"><span>${s.n}</span><div class="bar"><i style="width:${s.rev/maxSrc*100}%"></i></div><span class="v num">${eur.format(s.rev)}</span></div>`).join('')}</div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h2>Top 5 producten</h2><div class="sub">${p.label}, op omzet</div></div><a class="link" href="#producten">Bekijk alle producten</a></div>
+        <div class="tbl-wrap"><table><tbody>${topP.map((x,i) => `<tr><td class="rank">${i + 1}</td><td><span class="name">${esc(x.n)}</span><div class="muted">${x.c}</div></td><td class="r num">${eur.format(cur.rev*x.s)}</td><td class="r">${trendChip(x.tr)}</td></tr>`).join('')}</tbody></table></div>
+      </div>
+    </div>`;
+  },
+  after(){
+    drawRevChart();
+    drawSeason();
+    document.getElementById('gran').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.gran = b.dataset.g; document.querySelectorAll('#gran button').forEach(x => x.setAttribute('aria-pressed', x === b)); drawRevChart(); });
+  }
+};
+
+V.kanalen = {
+  title:'Verkoopkanalen', meta:'Alle verkoopkanalen naast elkaar, per afgesloten maand', period:false,
+  html(){
+    const cs = channels().sort((a,b) => b.tA - a.tA);
+    const TA = cs.reduce((a,c) => a + c.tA, 0), TB = cs.reduce((a,c) => a + c.tB, 0), KA = cs.reduce((a,c) => a + c.tA*c.keep, 0);
+    const downs = cs.filter(c => c.tA < c.tB), up = cs.length - downs.length;
+    const [m0, m1] = mRange(), single = m0 === m1, mode = single ? 'totaal' : state.cmpMode;
+    const spark = c => { const mx = Math.max(...B(c), ...A(c)) || 1; return `<svg viewBox="0 0 100 28" width="100" height="28" aria-hidden="true">${A(c).map((v,i) => { const o = i >= m0 && i <= m1 ? 1 : .3; return `<rect x="${i*10 + 1}" y="${28 - B(c)[i]/mx*26}" width="8" height="${B(c)[i]/mx*26}" fill="#cfd3d8" opacity="${o}"/><rect x="${i*10 + 2.5}" y="${28 - v/mx*26}" width="5" height="${v/mx*26}" rx="1" fill="var(--teal)" opacity="${o}"/>`; }).join('')}</svg>`; };
+    const opts = (list, sel) => list.map(y => `<option value="${y}"${y === sel ? ' selected' : ''}>${y}</option>`).join('');
+    const mopts = sel => MONF.slice(0,10).map((m,i) => `<option value="${i}"${i === sel ? ' selected' : ''}>${m}</option>`).join('');
+    const pBtns = Object.entries(CHP).map(([k,p]) => `<button type="button" data-p="${k}" aria-pressed="${state.chP === k}">${p.label}</button>`).join('') + `<button type="button" data-p="aangepast" aria-pressed="${state.chP === 'aangepast'}">Aangepast</button>`;
+    return `
+    <div class="filters">
+      <div class="fgroup"><span class="flabel" id="chplabel">Periode</span><div class="seg" id="chP" role="group" aria-labelledby="chplabel">${pBtns}</div></div>
+      <div class="fgroup"${state.chP === 'aangepast' ? '' : ' hidden'}><span class="flabel">Maanden</span>
+        <div class="mrange"><select class="sel" id="m0" aria-label="Van maand">${mopts(state.m0)}</select><span class="muted">t/m</span><select class="sel" id="m1" aria-label="Tot en met maand">${mopts(state.m1)}</select></div></div>
+      <div class="fgroup"><label class="flabel" for="yA">Jaar</label><select class="sel" id="yA">${opts(YEARS.slice(0, -1), state.yA)}</select></div>
+      <div class="fgroup"><label class="flabel" for="yB">Vergelijken met</label><select class="sel" id="yB">${opts(YEARS.filter(y => y < state.yA), state.yB)}</select></div>
+      <div class="fgroup"><span class="flabel">Pinksterconferentie</span><label class="chk" for="pink" style="padding:8px 0"><input type="checkbox" id="pink"${state.pink ? ' checked' : ''}> Meetellen</label></div>
+    </div>
+    <div class="kpis k3">
+      <div class="tile"><span class="lbl">Omzet ${state.pink ? 'alle kanalen' : 'zonder Pinksterconferentie'}</span><span class="val">${eur.format(TA)}</span><span class="cmp">${change(TA, TB)}<span>t.o.v. ${state.yB}</span></span><span class="note">${mLabel()} ${state.yA}</span></div>
+      ${tile('Opbrengst voor MajesticAlly', eur.format(KA), '', 'Na aftrek van het margedeel van partnershops')}
+      <div class="tile"><span class="lbl">Groei per kanaal</span>
+        <div class="updown"><span class="ud up"><b>${up}</b> groeien</span><span class="ud down"><b>${downs.length}</b> dalen</span></div>
+        <span class="note">${downs.length ? 'Dalen: ' + downs.map(c => `<a href="#rij-${c.i}" data-jump="${c.i}">${esc(c.name)}</a>`).join(', ') : 'Geen kanalen dalen'}</span></div>
+    </div>
+    <section class="card">
+      <div class="card-head">
+        <div><h2>Kanalen vergelijken</h2><div class="sub">Vink de kanalen aan die je naast elkaar wilt zien. ${mLabel()}.</div></div>
+        <label class="chk" for="cmpPrev"><input type="checkbox" id="cmpPrev"${state.cmpPrev ? ' checked' : ''}> Toon ${state.yB} als stippellijn</label>
+      </div>
+      <div class="tabs" id="cmpMode" role="group" aria-label="Weergave vergelijking">
+        <button type="button" data-m="maand" aria-pressed="${mode === 'maand'}"${single ? ' disabled title="Kies minstens twee maanden"' : ''}>Per maand</button>
+        <button type="button" data-m="totaal" aria-pressed="${mode === 'totaal'}">Totaal en groei</button>
+      </div>
+      <div class="cmpgrid">
+        <div class="chart" id="cmpChart"></div>
+        <fieldset class="pick" id="cmpPick">
+          <legend>Kanalen</legend>
+          ${CH.map((c,i) => showCh(i) ? `<label class="opt" for="cmp-${i}"><input type="checkbox" id="cmp-${i}" data-i="${i}"${state.cmp.has(i) ? ' checked' : ''}><span class="sw" style="background:${CMP_COLORS[i]}"></span>${c.name}</label>` : '').join('')}
+          <div class="pickbtns"><button type="button" class="lnk" data-all="1">Alles</button><button type="button" class="lnk" data-all="0">Niets</button></div>
+        </fieldset>
+      </div>
+    </section>
+    <div class="card">
+      <div><h2>Alle verkoopkanalen</h2><div class="sub">${mLabel()} ${state.yA} tegenover ${state.yB}. Balkjes: omzet per maand (blauw = ${state.yA}, grijs = ${state.yB}, buiten de gekozen periode lichter).</div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Kanaal</th><th class="r">Omzet ${state.yA}</th><th>t.o.v. ${state.yB}</th><th>Aandeel</th><th>Per maand</th><th class="r">Opbrengst</th></tr></thead>
+        <tbody>${cs.map(c => `<tr id="rij-${c.i}">
+          <td><span class="name">${c.name}</span><div class="muted kmeta">${srcChip(c.src, true)}<span>${c.type}${c.keep < 1 ? ', houdt ' + pct(c.keep) + ' over' : ''}</span></div></td>
+          <td class="r num">${eur.format(c.tA)}</td>
+          <td>${change(c.tA, c.tB)}</td>
+          <td><div class="share"><div class="bar"><i style="width:${TA ? c.tA/TA*100 : 0}%"></i></div><span class="muted num">${TA ? pct(c.tA/TA) : '—'}</span></div></td>
+          <td>${spark(c)}</td>
+          <td class="r num">${eur.format(c.tA*c.keep)}</td></tr>`).join('')}</tbody>
+        <tfoot><tr><td>Totaal</td><td class="r num">${eur.format(TA)}</td><td>${change(TA, TB)}</td><td></td><td></td><td class="r num">${eur.format(KA)}</td></tr></tfoot>
+      </table></div>
+      <div class="callout">De Pinksterconferentie valt niet elk jaar in dezelfde maand (2024 en 2026 in mei, 2025 in juni). Vergelijk je losse maanden, zet hem dan uit bij <b>Meetellen</b>. Kanalen met de bron <b>Handmatig</b> vul je in onder <a href="#invoer">Invoer</a>.</div>
+    </div>`;
+  },
+  after(){
+    drawCompare();
+    document.getElementById('chP').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.chP = b.dataset.p; render(); });
+    ['m0','m1'].forEach(k => document.getElementById(k).addEventListener('change', e => { state[k] = +e.target.value; if (state.m0 > state.m1) [state.m0, state.m1] = [state.m1, state.m0]; render(); }));
+    document.getElementById('pink').addEventListener('change', e => { state.pink = e.target.checked; render(); });
+    document.querySelector('#view .kpis').addEventListener('click', e => { const a = e.target.closest('[data-jump]'); if (!a) return; e.preventDefault(); const row = document.getElementById('rij-' + a.dataset.jump); if (!row) return; row.scrollIntoView({behavior:'smooth', block:'center'}); row.querySelectorAll('td').forEach(td => { td.style.transition = 'background .6s'; td.style.background = 'var(--warn-soft)'; setTimeout(() => td.style.background = '', 1400); }); });
+    ['yA','yB'].forEach(k => document.getElementById(k).addEventListener('change', e => { state[k] = +e.target.value; if (state.yB >= state.yA) state.yB = state.yA - 1; render(); }));
+    document.getElementById('cmpPick').addEventListener('change', e => { const i = +e.target.dataset.i; if (isNaN(i)) return; e.target.checked ? state.cmp.add(i) : state.cmp.delete(i); drawCompare(); });
+    document.getElementById('cmpPick').addEventListener('click', e => { const b = e.target.closest('[data-all]'); if (!b) return; state.cmp = new Set(b.dataset.all === '1' ? CH.map((_,i) => i) : []); document.querySelectorAll('#cmpPick input').forEach(x => x.checked = state.cmp.has(+x.dataset.i)); drawCompare(); });
+    document.getElementById('cmpPrev').addEventListener('change', e => { state.cmpPrev = e.target.checked; drawCompare(); });
+    document.getElementById('cmpMode').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.cmpMode = b.dataset.m; document.querySelectorAll('#cmpMode button').forEach(x => x.setAttribute('aria-pressed', x === b)); drawCompare(); });
+  }
+};
+
+const CMP_COLORS = ['#3b8fe6','#f07b3d','#8b6fe8','#1e9e8a','#d94f8c','#c9a227','#5b6b7a','#2bb3d9'];
+function drawCompare(){
+  const el = document.getElementById('cmpChart'); if (!el) return;
+  const sel = [...state.cmp].filter(showCh).sort((a,b) => a - b).map(i => ({i, c: CH[i], col: CMP_COLORS[i]}));
+  const [m0, m1] = mRange(), mode = m0 === m1 ? 'totaal' : state.cmpMode;
+  document.getElementById('cmpPrev').closest('label').hidden = mode !== 'maand';
+  if (!sel.length){ el.innerHTML = '<div class="empty">Vink een of meer kanalen aan om ze te vergelijken.</div>'; return; }
+  const W = 680, pl = 58, pr = 12;
+  if (mode === 'totaal'){
+    const rows = sel.map(s => ({...s, tA: tot(sl(A(s.c))), tB: tot(sl(B(s.c)))})).sort((a,b) => b.tA - a.tA);
+    const max = niceMax(Math.max(...rows.map(r => Math.max(r.tA, r.tB))));
+    const lw = 190, rh = 46, H = rows.length*rh + 30, X = v => lw + v/max*(W - lw - 120);
+    let s = '';
+    for (let k = 0; k <= 4; k++){ const x = X(max*k/4); s += `<line class="gl" x1="${x}" x2="${x}" y1="0" y2="${H - 22}"/><text class="ax" x="${x}" y="${H - 6}" text-anchor="middle">${short(max*k/4)}</text>`; }
+    rows.forEach((r,j) => {
+      const y = j*rh + 6, d = r.tB ? r.tA/r.tB - 1 : 0;
+      s += `<text x="0" y="${y + 20}" style="font-size:14px;font-weight:600;fill:var(--ink)">${esc(r.c.name)}</text>`;
+      s += `<rect x="${lw}" y="${y + 4}" width="${Math.max(1, X(r.tA) - lw)}" height="16" rx="3" fill="${r.col}"/>`;
+      s += `<rect x="${lw}" y="${y + 23}" width="${Math.max(1, X(r.tB) - lw)}" height="9" rx="2" fill="${r.col}" fill-opacity=".3"/>`;
+      s += `<text x="${X(r.tA) + 8}" y="${y + 17}" style="font-size:13.5px;font-weight:700;fill:var(--ink)">${short(r.tA)}</text>`;
+      s += `<text x="${X(Math.max(r.tA, r.tB)) + 8}" y="${y + 33}" style="font-size:13px;font-weight:700;fill:${d >= 0 ? 'var(--good)' : 'var(--bad)'}">${d >= 0 ? '▲' : '▼'} ${pct(Math.abs(d),1)}</text>`;
+    });
+    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Totale omzet per gekozen kanaal, ${state.yA} tegenover ${state.yB}">${s}</svg><div class="legend" style="margin-top:8px"><span><i style="border-top:8px solid var(--muted);width:14px"></i>${state.yA}</span><span><i style="border-top:5px solid var(--muted);opacity:.3;width:14px"></i>${state.yB}</span></div>`;
+    return;
+  }
+  const H = 280, pt = 12, pb = 28, n = m1 - m0 + 1;
+  const sA = c => sl(A(c)), sB = c => sl(B(c));
+  const vals = sel.flatMap(s => state.cmpPrev ? sB(s.c).concat(sA(s.c)) : sA(s.c));
+  const max = niceMax(Math.max(...vals, 1)*1.05);
+  const X = i => pl + i*(W - pl - pr)/(n - 1), Y = v => pt + (H - pt - pb)*(1 - v/max);
+  const path = arr => arr.map((v,i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join('');
+  let s = '';
+  for (let k = 0; k <= 4; k++){ const y = Y(max*k/4); s += `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}"/><text class="ax" x="${pl - 8}" y="${y + 4}" text-anchor="end">${short(max*k/4)}</text>`; }
+  MON.slice(m0,m1+1).forEach((m,i) => { s += `<text class="ax" x="${X(i)}" y="${H - 8}" text-anchor="middle">${m}</text>`; });
+  sel.forEach(r => {
+    if (state.cmpPrev) s += `<path d="${path(sB(r.c))}" fill="none" stroke="${r.col}" stroke-width="1.6" stroke-dasharray="5 4" opacity=".75"/>`;
+    s += `<path d="${path(sA(r.c))}" fill="none" stroke="${r.col}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    sA(r.c).forEach((v,i) => { s += `<circle data-i="${i}" cx="${X(i)}" cy="${Y(v)}" r="3" fill="${r.col}" stroke="#fff" stroke-width="0"/>`; });
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Omzet per maand per gekozen kanaal">${s}<line id="cmpHov" x1="0" x2="0" y1="${pt}" y2="${H - pb}" stroke="var(--muted)" opacity="0"/></svg><div class="tt"></div>`;
+  const svg = el.querySelector('svg'), tt = el.querySelector('.tt'), hov = el.querySelector('#cmpHov');
+  svg.addEventListener('pointermove', e => {
+    const b = svg.getBoundingClientRect(), x = (e.clientX - b.left)/b.width*W;
+    const i = Math.max(0, Math.min(n - 1, Math.round((x - pl)/((W - pl - pr)/(n - 1)))));
+    hov.setAttribute('x1', X(i)); hov.setAttribute('x2', X(i)); hov.setAttribute('opacity', .5);
+    tt.innerHTML = `<b>${MON[m0 + i]} ${state.yA}</b>` + sel.map(r => `<br><span style="color:${r.col}">●</span> ${esc(r.c.name)}: ${eur.format(sA(r.c)[i])}${state.cmpPrev ? ' <span style="opacity:.7">(' + state.yB + ': ' + eur.format(sB(r.c)[i]) + ')</span>' : ''}`).join('');
+    const px = X(i)/W*b.width, right = i < n/2;
+    tt.style.left = (right ? px + 14 : px - 14) + 'px';
+    tt.style.transform = right ? 'translate(0,0)' : 'translate(-100%,0)';
+    tt.style.top = '4px'; tt.style.opacity = 1;
+    svg.querySelectorAll('circle[data-i]').forEach(c => { const on = +c.dataset.i === i; c.setAttribute('r', on ? 5.5 : 3); c.setAttribute('stroke-width', on ? 2 : 0); });
+  });
+  svg.addEventListener('pointerleave', () => { tt.style.opacity = 0; hov.setAttribute('opacity', 0); svg.querySelectorAll('circle[data-i]').forEach(c => { c.setAttribute('r', 3); c.setAttribute('stroke-width', 0); }); });
+}
+
+V.marketing = {
+  title:'Marketing en rendement', meta:'Omzet per herkomstkanaal en wat advertenties opleveren. Bronnen: WooCommerce, Google Ads, Meta en Online Harvest', period:true,
+  html(){
+    const {p, cur, prev} = getP(); const m = marketing(cur), mp = marketing(prev);
+    return `
+    <div class="kpis">
+      ${tile('Advertentiekosten', eur.format(m.ad), '', 'Google Ads + Meta')}
+      ${tile('ROAS', dec(m.roas) + '×', '', 'Omzet per € advertentiebudget')}
+      ${tile('Kosten per bestelling', eur2.format(m.cpa), '', 'Alleen advertentiebudget')}
+      ${tile('Echte kosten per bestelling', eur2.format(m.realCpa), '', 'Incl. beheer en overige marketing')}
+    </div>
+    <div class="g21">
+      <div class="card">
+        <div><h2>Omzet per herkomstkanaal</h2><div class="sub">${p.label}, toegeschreven op basis van de herkomst van elke bestelling</div></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Kanaal</th><th class="r">Omzet</th><th class="r">Bestellingen</th><th class="r">Kosten</th><th class="r">ROAS</th><th class="r">Per bestelling</th><th>t.o.v. vj</th></tr></thead>
+          <tbody>${m.rows.slice().sort((a,b) => b.rev - a.rev).map(s => `<tr><td><span class="name">${s.n}</span>${s.paid ? '<div class="muted">Betaald</div>' : ''}</td><td class="r num">${eur.format(s.rev)}</td><td class="r num">${num.format(s.ord)}</td><td class="r num">${s.paid ? eur.format(s.spend) : '—'}</td><td class="r num">${s.paid ? dec(s.rev/s.spend) + '×' : '—'}</td><td class="r num">${s.paid && s.ord ? eur2.format(s.spend/s.ord) : '—'}</td><td>${trendChip(s.yoy)}</td></tr>`).join('')}</tbody>
+        </table></div>
+      </div>
+      <div class="card">
+        <div><h2>Totale marketingkosten</h2><div class="sub">${p.label}</div></div>
+        <div class="tbl-wrap"><table><tbody>
+          <tr><td>Google Ads</td><td class="r num">${eur.format(m.rows[0].spend)}</td></tr>
+          <tr><td>Facebook / Instagram Ads</td><td class="r num">${eur.format(m.rows[1].spend)}</td></tr>
+          <tr><td>Beheer Online Harvest</td><td class="r num">${eur.format(m.fee)}</td></tr>
+          <tr><td>Overige marketing</td><td class="r num">${eur.format(m.other)}</td></tr>
+        </tbody><tfoot><tr><td>Totaal</td><td class="r num">${eur.format(m.total)}</td></tr></tfoot></table></div>
+        <div class="tile" style="border:0;padding:0"><span class="lbl">Marketingkosten als % van omzet</span><span class="val">${pct(m.share,1)}</span><span class="note">Beheerkosten als vast maandbedrag, verdeeld over de dagen</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div><h2>Kortingscodes en acties</h2><div class="sub">${p.label}. ${pct(CODES.reduce((a,c) => a + c.sh, 0))} van de bestellingen gebruikte een code.</div></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Code</th><th class="r">Gebruikt</th><th class="r">Omzet</th><th class="r">Korting gegeven</th><th class="r">Gem. orderwaarde</th></tr></thead>
+        <tbody>${CODES.map(c => { const o = Math.round(cur.ord*c.sh), rv = cur.rev*c.sh*1.12, k = c.ship ? o*4.15 : rv*c.disc/(1 - c.disc); return `<tr><td><span class="name">${c.c}</span><div class="muted">${c.d}</div></td><td class="r num">${num.format(o)}×</td><td class="r num">${eur.format(rv)}</td><td class="r num">${eur.format(k)}</td><td class="r num">${o ? eur2.format(rv/o) : '—'}</td></tr>`; }).join('')}</tbody>
+      </table></div>
+    </div>`;
+  }
+};
+
+V.producten = {
+  title:'Productprestaties', meta:'Webshop majestically.nl, uit WooCommerce', period:true,
+  html(){
+    const {p, cur} = getP();
+    const byRev = PRODUCTS.slice().sort((a,b) => b.s - a.s).slice(0,10);
+    const byQty = PRODUCTS.map(x => ({...x, q: cur.rev*x.s/(x.p/1.21)})).sort((a,b) => b.q - a.q).slice(0,10);
+    const movers = PRODUCTS.filter(x => x.tr != null).sort((a,b) => b.tr - a.tr);
+    const low = PRODUCTS.filter(x => x.cost > .35);
+    const maxCat = Math.max(...CATS.map(c => c.s));
+    const row = (x,i,val) => `<tr><td class="rank">${i + 1}</td><td><span class="name">${esc(x.n)}</span><div class="muted">${x.c}${x.cost > .35 ? ' <span class="chip warn">lage marge</span>' : ''}</div></td><td class="r num">${val}</td><td class="r">${trendChip(x.tr)}</td></tr>`;
+    return `
+    <div class="g2">
+      <div class="card"><div><h2>Top 10 op omzet</h2><div class="sub">${p.label}</div></div>
+        <div class="tbl-wrap"><table><tbody>${byRev.map((x,i) => row(x,i,eur.format(cur.rev*x.s))).join('')}</tbody></table></div></div>
+      <div class="card"><div><h2>Top 10 op verkochte aantallen</h2><div class="sub">${p.label}</div></div>
+        <div class="tbl-wrap"><table><tbody>${byQty.map((x,i) => row(x,i,num.format(x.q) + ' st.')).join('')}</tbody></table></div></div>
+    </div>
+    <div class="g21">
+      <div class="card"><div><h2>Categorieën</h2><div class="sub">${p.label}, omzet en groei t.o.v. vorig jaar</div></div>
+        <div class="hbars">${CATS.map(c => `<div class="hbar"><span>${c.n} ${trendChip(c.tr)}</span><div class="bar"><i style="width:${c.s/maxCat*100}%"></i></div><span class="v num">${eur.format(cur.rev*c.s)}</span></div>`).join('')}</div></div>
+      <div class="card"><div><h2>Stijgers en dalers</h2><div class="sub">Grootste verschil t.o.v. vorig jaar</div></div>
+        <ul class="signals">${movers.slice(0,3).map(x => `<li class="good"><div><strong>${esc(x.n)} ${trendChip(x.tr)}</strong><span>${x.c}</span></div></li>`).join('')}${movers.slice(-3).reverse().map(x => `<li class="bad"><div><strong>${esc(x.n)} ${trendChip(x.tr)}</strong><span>${x.c}</span></div></li>`).join('')}</ul>
+        <div class="callout">Lage marge: ${low.map(x => esc(x.n)).join(', ')}. Veel omzet, maar inkoop boven 35% van de verkoopprijs.</div></div>
+    </div>
+    <div class="g2">
+      <div class="card"><div><h2>Nieuwe producten</h2><div class="sub">Verkochte aantallen in de eerste 30 en 60 dagen, vergeleken met een gemiddeld nieuw product (${NEW_AVG} stuks in 30 dagen)</div></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Product</th><th class="r">30 dagen</th><th class="r">60 dagen</th><th class="r">t.o.v. gemiddeld</th></tr></thead>
+          <tbody>${NEW.map(x => `<tr><td><span class="name">${esc(x.n)}</span><div class="muted">Online sinds ${dLabel(Date.parse(x.live))}</div></td><td class="r num">${num.format(x.d30)}</td><td class="r num">${x.d60 == null ? '<span class="muted">nog niet</span>' : num.format(x.d60)}</td><td class="r">${trendChip(x.d30/NEW_AVG - 1)}</td></tr>`).join('')}</tbody>
+        </table></div></div>
+      <div class="card"><div><h2>Bestsellers met weinig voorraad</h2><div class="sub">Bij het huidige verkooptempo op binnen vier weken</div></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Product</th><th class="r">Voorraad</th><th class="r">Per week</th><th class="r">Op over</th></tr></thead>
+          <tbody>${STOCK.map(x => ({...x, days: Math.round(x.stock/x.wk*7)})).sort((a,b) => a.days - b.days).map(x => `<tr><td class="name">${esc(x.n)}</td><td class="r num">${num.format(x.stock)}</td><td class="r num">${num.format(x.wk)}</td><td class="r"><span class="chip ${x.days <= 10 ? 'down' : x.days <= 21 ? 'warn' : 'flat'}">${x.days} dagen</span></td></tr>`).join('')}</tbody>
+        </table></div></div>
+    </div>`;
+  }
+};
+
+V.klanten = {
+  title:'Klantgedrag', meta:'Bezoekers en conversie uit Google Analytics, klanten uit WooCommerce', period:true,
+  html(){
+    const {p, cur, prev} = getP();
+    const conv = .0215, convP = .0203;
+    const vis = cur.ord/conv, visP = prev.ord/convP, cart = vis*.083, chk = cur.ord/.36, nw = Math.round(cur.ord*.61);
+    const steps = [['Bezoekers','Sessies op de webshop',vis],['In winkelwagen','Minstens één product toegevoegd',cart],['Afrekenen gestart','Naar de kassa',chk],['Besteld','Betaling afgerond',cur.ord]];
+    return `
+    <div class="kpis">
+      ${tile('Bezoekers', num.format(vis), change(vis, visP))}
+      ${tile('Conversiepercentage', pct(conv,2), change(conv, convP), 'Bezoekers die een bestelling plaatsen')}
+      ${tile('Nieuwe klanten', num.format(nw), '', pct(nw/cur.ord) + ' van de bestellingen')}
+      ${tile('Terugkerende klanten', num.format(cur.ord - nw), '', pct((cur.ord - nw)/cur.ord) + ' bestelde eerder al')}
+    </div>
+    <div class="card">
+      <div><h2>Van bezoek tot bestelling</h2><div class="sub">${p.label}, ${num.format(chk - cur.ord)} mensen begonnen met afrekenen maar rondden niet af (${pct((chk - cur.ord)/chk)})</div></div>
+      <div class="funnel">${steps.map(s => `<div class="fstep"><div class="lab">${s[0]}<span>${s[1]}</span></div><div><div class="fb" style="width:${Math.max(14, s[2]/vis*100)}%">${num.format(s[2])}</div></div></div>`).join('')}</div>
+      <div class="callout">Verlaten winkelwagens tonen we alleen als Google Analytics de stappen betrouwbaar meet. Dat controleren we in fase 2.</div>
+    </div>`;
+  }
+};
+
+V.winst = {
+  title:'Winstgevendheid', meta:'Van omzet naar wat er overblijft in de webshop majestically.nl', period:true,
+  html(){
+    const {p, cur} = getP(); const m = marketing(cur);
+    const costPct = state.cost === 'regel' ? .25 : PRODUCTS.reduce((a,x) => a + x.s*x.cost, 0)/PRODUCTS.reduce((a,x) => a + x.s, 0);
+    const inkoop = cur.rev*costPct, ship = cur.ord*.46*4.15, gross = cur.rev - inkoop, res = gross - ship - m.total;
+    return `
+    <div class="card-head"><div class="seg small" id="costmode" role="group" aria-label="Inkoopberekening">
+      <button type="button" data-c="regel" aria-pressed="${state.cost === 'regel'}">Stelregel 25% inkoop</button>
+      <button type="button" data-c="exact" aria-pressed="${state.cost === 'exact'}">Kostprijs per product</button></div></div>
+    <div class="kpis">
+      ${tile('Brutomarge', eur.format(gross), '', pct(1 - costPct,1) + ' van de omzet')}
+      ${tile('Inkoopwaarde', eur.format(inkoop), '', state.cost === 'regel' ? 'Stelregel: 25% van de omzet' : 'Op basis van ingevoerde kostprijzen')}
+      ${tile('Verzendkosten eigen rekening', eur.format(ship), '', 'Bij gratis verzending betaalt MajesticAlly')}
+      ${tile('Marketing % omzet', pct(m.share,1), '', eur.format(m.total) + ' totaal')}
+    </div>
+    <div class="card">
+      <div><h2>Van omzet naar resultaat</h2><div class="sub">${p.label}, ${eur.format(res)} blijft over na inkoop, verzending en marketing (${pct(res/cur.rev)})</div></div>
+      <div class="chart" id="wf"></div>
+      <div class="callout">Vaste kosten zoals personeel en huur staan hier bewust niet in. Dit laat zien wat de verkoop zelf oplevert.</div>
+    </div>`;
+  },
+  after(){
+    const {cur} = getP(); const m = marketing(cur);
+    const costPct = state.cost === 'regel' ? .25 : PRODUCTS.reduce((a,x) => a + x.s*x.cost, 0)/PRODUCTS.reduce((a,x) => a + x.s, 0);
+    const inkoop = cur.rev*costPct, ship = cur.ord*.46*4.15;
+    const steps = [['Omzet', cur.rev, 'total'], ['Inkoop', -inkoop], ['Verzending', -ship], ['Advertenties', -m.ad], ['Beheer en overig', -(m.fee + m.other)]];
+    const res = steps.reduce((a,s) => a + s[1], 0); steps.push(['Resultaat', res, 'total']);
+    const W = 680, H = 250, pl = 12, pr = 12, pt = 24, pb = 30, bw = (W - pl - pr)/steps.length;
+    const Y = v => pt + (H - pt - pb)*(1 - v/cur.rev);
+    let run = 0, s = '';
+    steps.forEach((st,i) => {
+      const x = pl + i*bw + bw*.18, w = bw*.64; let y0, y1, fill;
+      if (st[2]){ y0 = Y(st[1]); y1 = Y(0); fill = i === 0 ? 'var(--teal)' : 'var(--good)'; run = st[1]; }
+      else { y0 = Y(run); y1 = Y(run + st[1]); fill = 'var(--bad)'; run += st[1]; }
+      s += `<rect x="${x}" y="${y0}" width="${w}" height="${Math.max(1, y1 - y0)}" rx="3" fill="${fill}" fill-opacity="${st[2] ? .85 : .7}"/>`;
+      if (i < steps.length - 1) s += `<line x1="${x + w}" x2="${x + bw}" y1="${Y(run)}" y2="${Y(run)}" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
+      s += `<text class="ax" x="${x + w/2}" y="${y0 - 7}" text-anchor="middle" style="font-weight:700;fill:var(--ink)">${st[2] ? short(st[1]) : '−' + short(-st[1])}</text>`;
+      s += `<text class="ax" x="${x + w/2}" y="${H - 9}" text-anchor="middle">${st[0]}</text>`;
+    });
+    document.getElementById('wf').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Van omzet naar resultaat"><line class="gl" x1="${pl}" x2="${W - pr}" y1="${Y(0)}" y2="${Y(0)}"/>${s}</svg>`;
+    document.getElementById('costmode').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.cost = b.dataset.c; render(); });
+  }
+};
+
+V.maandagmail = {
+  title:'Maandagmail', meta:'Zo ziet de mail eruit die elke maandagochtend automatisch met de cijfers van de vorige week wordt verstuurd', period:false,
+  html(){
+    const a = Date.UTC(2026,9,26), b = Date.UTC(2026,10,1);
+    const cur = sum(a,b), prev = sum(a - 364*DAY, b - 364*DAY);
+    const okt = sum(Date.UTC(2026,9,1), Date.UTC(2026,9,31)).rev, okt25 = sum(Date.UTC(2025,9,1), Date.UTC(2025,9,31)).rev;
+    const d = cur.rev/prev.rev - 1;
+    const top3 = PRODUCTS.slice().sort((x,y) => y.s - x.s).slice(0,3);
+    return `
+    <article class="mail" aria-label="Voorbeeld van de maandagmail">
+      <div class="mhead"><span>Van</span><b>MajesticAlly Dashboard</b><span>Aan</span><b>Het MajesticAlly-team</b><span>Onderwerp</span><b>Week 44: ${eur.format(cur.rev)} omzet, ${pct(Math.abs(d),1)} ${d >= 0 ? 'meer' : 'minder'} dan vorig jaar</b></div>
+      <p>Goedemorgen. Dit zijn de cijfers van maandag 26 oktober tot en met zondag 1 november.</p>
+      <h3>De week in het kort</h3>
+      <ul>
+        <li>Omzet webshop: <b>${eur.format(cur.rev)}</b> ${change(cur.rev, prev.rev)}</li>
+        <li>Bestellingen: <b>${num.format(cur.ord)}</b> ${change(cur.ord, prev.ord)}</li>
+        <li>Gemiddelde orderwaarde: <b>${eur2.format(cur.rev/cur.ord)}</b></li>
+        <li>Oktober is afgesloten op <b>${eur.format(okt)}</b> ${change(okt, okt25)}</li>
+      </ul>
+      <h3>Wat aandacht vraagt</h3>
+      <ul class="signals">${signals().map(s => `<li class="${s.l}"><div><strong>${s.t}</strong><span>${s.s}</span></div></li>`).join('')}</ul>
+      <h3>Best verkocht</h3>
+      <ul>${top3.map(x => `<li>${esc(x.n)} ${trendChip(x.tr)}</li>`).join('')}</ul>
+      <p><a href="#overzicht">Open het dashboard</a></p>
+    </article>`;
+  }
+};
+
+V.invoer = {
+  title:'Invoer', meta:'Maandomzet invullen voor kanalen zonder koppeling, exclusief btw', period:false,
+  html(){
+    const cs = CH.filter(c => c.type !== 'Eigen webshop' && c.type !== 'Partnershop');
+    return `
+    <div class="callout">Kanalen met een koppeling worden elke nacht automatisch bijgewerkt. Voor de rest vul je hier eens per maand de omzet in. In dit prototype werkt het invullen wel, maar wordt niets opgeslagen.</div>
+    <div class="card">
+      <div><h2>Maandomzet 2026</h2><div class="sub">Wijzig een bedrag en bekijk het resultaat direct onder Verkoopkanalen</div></div>
+      <div class="tbl-wrap"><table class="inv">
+        <thead><tr><th>Maand</th>${cs.map(c => `<th class="r">${c.name}<div style="margin-top:4px">${srcChip(c.src)}</div></th>`).join('')}</tr></thead>
+        <tbody>${MON.slice(0,10).map((mn,m) => `<tr><td class="name">${mn}</td>${cs.map(c => { const ci = CH.indexOf(c); return c.src === 'Handmatig' ? `<td><input type="number" inputmode="numeric" min="0" step="100" id="inv-${ci}-${m}" data-c="${ci}" data-m="${m}" value="${c.data[1][m]}" aria-label="${c.name} ${mn}"></td>` : `<td class="ro">${eur.format(c.data[1][m])}</td>`; }).join('')}</tr>`).join('')}</tbody>
+      </table></div>
+    </div>`;
+  },
+  after(){
+    document.querySelector('.inv').addEventListener('change', e => { const i = e.target; if (!i.dataset.c) return; const v = Math.max(0, Number(i.value) || 0); CH[+i.dataset.c].data[1][+i.dataset.m] = v; i.value = v; });
+  }
+};
+
+/* ---------- Render ---------- */
+const periodsEl = document.getElementById('periods');
+const boxEl = document.getElementById('periodbox'), customEl = document.getElementById('custom');
+const fromEl = document.getElementById('d-from'), toEl = document.getElementById('d-to');
+const iso = t => new Date(t).toISOString().slice(0,10);
+fromEl.value = iso(state.ca); toEl.value = iso(state.cb);
+periodsEl.innerHTML = Object.entries(PERIODS).map(([k,p]) => `<button type="button" data-p="${k}" aria-pressed="${state.period === k}">${p.label}</button>`).join('') + `<button type="button" data-p="aangepast" aria-pressed="${state.period === 'aangepast'}">Aangepast</button>`;
+periodsEl.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; state.period = b.dataset.p; try { localStorage.setItem('ma-period', state.period); } catch(err) {} periodsEl.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); });
+function onDates(){
+  const lo = Date.UTC(2026,0,1);
+  let a = Date.parse(fromEl.value), b = Date.parse(toEl.value);
+  if (isNaN(a) || isNaN(b)) return;
+  a = Math.min(Math.max(a, lo), TODAY); b = Math.min(Math.max(b, lo), TODAY);
+  if (b < a) [a, b] = [b, a];
+  state.ca = a; state.cb = b; fromEl.value = iso(a); toEl.value = iso(b);
+  render();
+}
+fromEl.addEventListener('change', onDates); toEl.addEventListener('change', onDates);
+
+function render(){
+  let v = location.hash.slice(1); if (!V[v]) v = 'overzicht';
+  const view = V[v];
+  document.querySelectorAll('#nav a').forEach(a => a.dataset.v === v ? a.setAttribute('aria-current','page') : a.removeAttribute('aria-current'));
+  document.getElementById('title').textContent = view.title;
+  const navIc = document.querySelector('#nav a[data-v="' + v + '"] svg');
+  document.getElementById('picon').innerHTML = navIc ? navIc.outerHTML : '';
+  document.getElementById('mailbtn').hidden = v === 'maandagmail';
+  document.getElementById('meta').textContent = view.meta + '. Bijgewerkt op donderdag 5 november 2026 om 14:00.';
+  boxEl.hidden = !view.period;
+  customEl.hidden = state.period !== 'aangepast';
+  const onBtn = periodsEl.querySelector('[aria-pressed="true"]');
+  if (onBtn && periodsEl.scrollWidth > periodsEl.clientWidth) periodsEl.scrollLeft = Math.max(0, onBtn.offsetLeft - periodsEl.offsetLeft - 24);
+  document.getElementById('view').innerHTML = view.html();
+  if (view.after) view.after();
+}
+window.addEventListener('hashchange', () => { render(); window.scrollTo(0,0); });
+render();
+})();
+</script>
